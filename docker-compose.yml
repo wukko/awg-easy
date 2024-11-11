@@ -1,5 +1,5 @@
 volumes:
-  etc_wireguard:
+  etc_amnezia_wireguard:
 
 services:
   wg-easy:
