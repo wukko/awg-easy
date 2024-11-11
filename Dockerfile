@@ -55,7 +55,6 @@ COPY --from=build_node_modules /node_modules /node_modules
 
 # Copy the needed wg-password scripts
 COPY --from=build_node_modules /app/wgpw.sh /bin/wgpw
-COPY --from=build_node_modules /app/setup.sh /bin/awg-setup
 RUN chmod +x /bin/wgpw
 
 # Install Linux packages
@@ -75,4 +74,4 @@ ENV DEBUG=Server,WireGuard
 
 # Run Web UI
 WORKDIR /app
-CMD ["/usr/bin/dumb-init", "awg-setup"]
+CMD ["/usr/bin/dumb-init", "node", "server.js"]
