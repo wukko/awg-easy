@@ -78,6 +78,7 @@ docker run --detach \
   --env PORT=51821 \
   --env WG_PORT=51820 \
   --volume ~/.awg-easy:/etc/amnezia/amneziawg \
+  --device /dev/net/tun:/dev/net/tun \
   --publish 51820:51820/udp \
   --publish 51821:51821/tcp \
   --cap-add NET_ADMIN \

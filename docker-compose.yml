@@ -48,6 +48,8 @@ services:
     container_name: wg-easy
     volumes:
       - etc_amnezia_wireguard:/etc/amnezia/amneziawg
+    devices:
+      - /dev/net/tun:/dev/net/tun
     ports:
       - "51820:51820/udp"
       - "51821:51821/tcp"
