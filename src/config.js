@@ -45,3 +45,25 @@ module.exports.UI_ENABLE_SORT_CLIENTS = process.env.UI_ENABLE_SORT_CLIENTS || 'f
 module.exports.WG_ENABLE_EXPIRES_TIME = process.env.WG_ENABLE_EXPIRES_TIME || 'false';
 module.exports.ENABLE_PROMETHEUS_METRICS = process.env.ENABLE_PROMETHEUS_METRICS || 'false';
 module.exports.PROMETHEUS_METRICS_PASSWORD = process.env.PROMETHEUS_METRICS_PASSWORD;
+
+const amnezia_has_s = +process.env.AMNEZIA_S1 && +process.env.AMNEZIA_S2;
+const amnezia_has_h = +process.env.AMNEZIA_H1 && +process.env.AMNEZIA_H2
+                   && +process.env.AMNEZIA_H3 && +process.env.AMNEZIA_H4;
+const amnezia_has_any = Object.keys(process.env).some(k => k.startsWith('AMNEZIA_'));
+
+module.exports.AMNEZIA = !amnezia_has_any ? null : {
+  JC: +process.env.AMNEZIA_JC,
+  JMIN: +process.env.AMNEZIA_JMIN,
+  JMAX: +process.env.AMNEZIA_JMAX,
+  S: amnezia_has_s && {
+    [1]: +process.env.AMNEZIA_S1,
+    [2]: +process.env.AMNEZIA_S2
+  },
+  H: amnezia_has_h && {
+    [1]: +process.env.AMNEZIA_H1,
+    [2]: +process.env.AMNEZIA_H2,
+    [3]: +process.env.AMNEZIA_H3,
+    [4]: +process.env.AMNEZIA_H4,
+  }
+};
+

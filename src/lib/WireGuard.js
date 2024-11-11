@@ -26,9 +26,62 @@ const {
   WG_POST_DOWN,
   WG_ENABLE_EXPIRES_TIME,
   WG_ENABLE_ONE_TIME_LINKS,
+  AMNEZIA,
 } = require('../config');
 
 module.exports = class WireGuard {
+
+  // https://github.com/amnezia-vpn/amneziawg-linux-kernel-module#configuration
+  __validateAmneziaParams(params) {
+    Util.checkRange(params, 'J_c', 1, 128);
+    Util.checkRange(params, 'J_min', 0, params.J_max);
+    Util.checkRange(params, 'J_max', params.J_min + 1, 1280);
+    Util.checkRange(params, 'S.1', 0, 1280);
+    Util.checkRange(params, 'S.2', 0, 1280);
+    for (let i = 1; i <= 4; ++i)
+      Util.checkRange(params, `H.${i}`, 5, 2**31 - 1);
+
+    if (params.S[1] + 56 === params.S[2])
+      throw "S1 + 56 cannot equal S2";
+  }
+
+  __getAmneziaParams() {
+    const params = {
+      J_c: AMNEZIA?.JC || Util.rand(3, 10),
+      J_min: AMNEZIA?.JMIN || Util.rand(64, 1024),
+      J_max: AMNEZIA?.JMAX,
+      H: AMNEZIA?.H || Object.fromEntries(
+           Array.from({ length: 4 })
+             .map((_, i) => [ i + 1, Util.rand(5, 2 ** 31 - 1) ])
+      ),
+      S: AMNEZIA?.S || {
+        [1]: Util.rand(15, 150),
+        [2]: Util.rand(15, 150)
+      }
+    };
+
+    if (!params.J_max)
+      params.J_max = Util.rand(params.J_min, 1280);
+
+    if (!AMNEZIA?.S && params.S[1] + 56 === params.S[2]) {
+        --params.S[2];
+    }
+
+    this.__validateAmneziaParams(params);
+    return params;
+  }
+
+  __amneziaParamsToConfig(config) {
+    return `Jc = ${config.server.amnezia.J_c}
+Jmin = ${config.server.amnezia.J_min}
+Jmax = ${config.server.amnezia.J_max}
+S1 = ${config.server.amnezia.S[1]}
+S2 = ${config.server.amnezia.S[2]}
+H1 = ${config.server.amnezia.H[1]}
+H2 = ${config.server.amnezia.H[2]}
+H3 = ${config.server.amnezia.H[3]}
+H4 = ${config.server.amnezia.H[4]}`;
+  }
 
   async __buildConfig() {
     this.__configPromise = Promise.resolve().then(async () => {
@@ -48,12 +101,14 @@ module.exports = class WireGuard {
           log: 'echo ***hidden*** | wg pubkey',
         });
         const address = WG_DEFAULT_ADDRESS.replace('x', '1');
+        const amnezia = this.__getAmneziaParams();
 
         config = {
           server: {
             privateKey,
             publicKey,
             address,
+            amnezia
           },
           clients: {},
         };
@@ -109,6 +164,7 @@ PreUp = ${WG_PRE_UP}
 PostUp = ${WG_POST_UP}
 PreDown = ${WG_PRE_DOWN}
 PostDown = ${WG_POST_DOWN}
+${this.__amneziaParamsToConfig(config)}
 `;
 
     for (const [clientId, client] of Object.entries(config.clients)) {
@@ -218,6 +274,7 @@ PrivateKey = ${client.privateKey ? `${client.privateKey}` : 'REPLACE_ME'}
 Address = ${client.address}/24
 ${WG_DEFAULT_DNS ? `DNS = ${WG_DEFAULT_DNS}\n` : ''}\
 ${WG_MTU ? `MTU = ${WG_MTU}\n` : ''}\
+${this.__amneziaParamsToConfig(config)}
 
 [Peer]
 PublicKey = ${config.server.publicKey}
