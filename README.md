@@ -68,6 +68,8 @@ And log in again.
 To automatically install & run wg-easy, simply run:
 
 ```shell
+docker build -t awg-easy .
+
 docker run --detach \
   --name wg-easy \
   --env LANG=de \
@@ -75,7 +77,7 @@ docker run --detach \
   --env PASSWORD_HASH='<🚨YOUR_ADMIN_PASSWORD_HASH>' \
   --env PORT=51821 \
   --env WG_PORT=51820 \
-  --volume ~/.wg-easy:/etc/wireguard \
+  --volume ~/.awg-easy:/etc/amnezia/amneziawg \
   --publish 51820:51820/udp \
   --publish 51821:51821/tcp \
   --cap-add NET_ADMIN \
@@ -83,7 +85,7 @@ docker run --detach \
   --sysctl 'net.ipv4.conf.all.src_valid_mark=1' \
   --sysctl 'net.ipv4.ip_forward=1' \
   --restart unless-stopped \
-  ghcr.io/wg-easy/wg-easy
+  awg-easy
 ```
 
 > 💡 Replace `<🚨YOUR_SERVER_IP>` with your WAN IP, or a Dynamic DNS hostname.
@@ -94,7 +96,7 @@ The Web UI will now be available on `http://0.0.0.0:51821`.
 
 The Prometheus metrics will now be available on `http://0.0.0.0:51821/metrics`. Grafana dashboard [21733](https://grafana.com/grafana/dashboards/21733-wireguard/)
 
-> 💡 Your configuration files will be saved in `~/.wg-easy`
+> 💡 Your configuration files will be saved in `~/.awg-easy`
 
 WireGuard Easy can be launched with Docker Compose as well - just download
 [`docker-compose.yml`](docker-compose.yml), make necessary adjustments and

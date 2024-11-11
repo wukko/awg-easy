@@ -33,10 +33,21 @@ services:
       # - ENABLE_PROMETHEUS_METRICS=false
       # - PROMETHEUS_METRICS_PASSWORD=$$2a$$12$$vkvKpeEAHD78gasyawIod.1leBMKg8sBwKW.pQyNsq78bXV3INf2G # (needs double $$, hash of 'prometheus_password'; see "How_to_generate_an_bcrypt_hash.md" for generate the hash)
 
-    image: ghcr.io/wg-easy/wg-easy
+      # Optional: Specific Amnezia params
+      # Needs to be within range. See: https://github.com/amnezia-vpn/amneziawg-linux-kernel-module#configuration
+      # - AMNEZIA_JC: 10
+      # - AMNEZIA_JMIN: 50
+      # - AMNEZIA_JMAX: 1000
+      # - AMNEZIA_S1: 20
+      # - AMNEZIA_S2: 100
+      # - AMNEZIA_H1: 12421
+      # - AMNEZIA_H2: 328589
+      # - AMNEZIA_H3: 2412
+      # - AMNEZIA_H4: 285821
+    build: .
     container_name: wg-easy
     volumes:
-      - etc_wireguard:/etc/wireguard
+      - etc_amnezia_wireguard:/etc/amnezia/amneziawg
     ports:
       - "51820:51820/udp"
       - "51821:51821/tcp"
